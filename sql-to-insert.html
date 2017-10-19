@@ -1,26 +1,48 @@
 <html>
+  <style>
+     html, body { font-family: Verdana; }
+     textarea { width: 100%; height: 300px; margin: 10 0;}
+  </style>
 <script>
 function enquote(s) {
+   if (s === 'NULL') return 'NULL';
+   
+   // e.g. 007
+   var shouldEnquote = (s[0] === '0' && s.length > 1);
+
+   shouldEnquote = shouldEnquote || s == '';
+
+   // e.g. 12.0.0.183
+   shouldEnquote = shouldEnquote || (s.match(/\..*\./));
+
    for (var ch of s) {
       if ('abcdefghijklmnopqrstuvwstuvwxyz,:'.indexOf(ch.toLowerCase()) >= 0) {
-        return "'" + s.replace("'", "''") + "'"; 
+         shouldEnquote = true;
+         break;
       }
    }
-   return s;
+
+   return shouldEnquote ? "'" + s.replace("'", "''") + "'" : s;
 }
 
-function turnIntoInsert() {
+let noop = (_) => _;
+let dropFirstColumn = columns => { columns.shift(); return columns; }
+
+function turnIntoInsert(options) {
+
   var tableName = document.getElementById("tablename").value;
   var src = document.getElementById("src").value;
   var lines = src.split(/\n/);
   var header = lines.shift();
-  var insertHeader = 'INSERT INTO ' + tableName + ' (' + header.replace(/\t/g, ',') + ' ) VALUES (';
+  var dropFirst = options && options.dropFirstColumn;
+  var firstColumnOperation = dropFirst? dropFirstColumn: noop
 
-  var results = [];
+  var columnNames = firstColumnOperation(header.split(/\t/)).map(_ => _.trim()).join(',');
+
+    var results = [];
   for (line of lines) {
-      var columns = line.split(/\t/).map(enquote);    
-      var newline = columns.join(', ');  
-      results.push(insertHeader + newline + ')');
+      var values = firstColumnOperation(line.split(/\t/)).map(enquote).join(',');
+      results.push(`INSERT INTO ${tableName} (${columnNames}) VALUES (${values});`);
   }
 
   document.getElementById("dest").value = results.join('\n')
@@ -31,7 +53,6 @@ function turnIntoInsert() {
 <b>Turns SSMS (Sql Server Management Studio) query results into INSERT statements</b>
   <br />
 
-<b>Table name</b> <input type="text" value="tablename" id="tablename" /><br />
   
 <p>Run the query, and in the grid view CTRL+A to select all, and CTRL+Shift+C to 
   copy everything including column names, and paste into this text area below</p>
@@ -39,7 +60,9 @@ function turnIntoInsert() {
   <textarea name="src" id="src" cols="200" rows="20">
   </textarea>
   <br />
-  <button  onclick="turnIntoInsert()">Turn into INSERT</button>
+  <b>Table name</b> <input type="text" value="tablename" id="tablename" />
+  <button  onclick="turnIntoInsert({})">Turn into INSERT</button>
+  <button onclick="turnIntoInsert({dropFirstColumn: true})">Drop first column</button>
 <br />
 <textarea name="dest" id="dest" cols="200" rows="20">
 </textarea>
