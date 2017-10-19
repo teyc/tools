@@ -1,23 +1,46 @@
 <html>
 <script>
+function enquote(s) {
+   for (var ch of s) {
+      if ('abcdefghijklmnopqrstuvwstuvwxyz,:'.indexOf(ch.toLowerCase()) >= 0) {
+        return "'" + s.replace("'", "''") + "'"; 
+      }
+   }
+   return s;
+}
+
 function turnIntoInsert() {
+  var tableName = document.getElementById("tablename").value;
   var src = document.getElementById("src").value;
-  document.getElementById("dest").value = src;
+  var lines = src.split(/\n/);
+  var header = lines.shift();
+  var insertHeader = 'INSERT INTO ' + tableName + ' (' + header.replace(/\t/g, ',') + ' ) VALUES (';
+
+  var results = [];
+  for (line of lines) {
+      var columns = line.split(/\t/).map(enquote);    
+      var newline = columns.join(', ');  
+      results.push(insertHeader + newline + ')');
+  }
+
+  document.getElementById("dest").value = results.join('\n')
 }
 
 </script>
 
 <b>Turns SSMS (Sql Server Management Studio) query results into INSERT statements</b>
   <br />
+
+<b>Table name</b> <input type="text" value="tablename" id="tablename" /><br />
   
 <p>Run the query, and in the grid view CTRL+A to select all, and CTRL+Shift+C to 
   copy everything including column names, and paste into this text area below</p>
   
-  <textarea name="src" id="src">
+  <textarea name="src" id="src" cols="200" rows="20">
   </textarea>
   <br />
   <button  onclick="turnIntoInsert()">Turn into INSERT</button>
 <br />
-<textarea name="dest" id="dest">
+<textarea name="dest" id="dest" cols="200" rows="20">
 </textarea>
 </html>
