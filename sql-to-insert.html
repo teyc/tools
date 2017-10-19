@@ -2,16 +2,21 @@
 <script>
 function turnIntoInsert() {
   var src = document.getElementById("src").value;
-  dcoument.getElementById("dest").value = src;
+  document.getElementById("dest").value = src;
 }
 
 </script>
 
 <b>Turns SSMS (Sql Server Management Studio) query results into INSERT statements</b>
-<p>Run the query, and in the grid view CTRL+A to select all, and CTRL+Shift+C to copy everything including column names, and paste into this text area below</p>
-<textarea name="src" id="src">
-</textarea>
-<button value="Turn into INSERT" onclick="turnIntoInsert()" />
+  <br />
+  
+<p>Run the query, and in the grid view CTRL+A to select all, and CTRL+Shift+C to 
+  copy everything including column names, and paste into this text area below</p>
+  
+  <textarea name="src" id="src">
+  </textarea>
+  <br />
+  <button  onclick="turnIntoInsert()">Turn into INSERT</button>
 <br />
 <textarea name="dest" id="dest">
 </textarea>
