@@ -12,7 +12,10 @@ function enquote(s) {
 
    shouldEnquote = shouldEnquote || s == '';
 
-   // e.g. 12.0.0.183
+   // e.g. 689-?
+   shouldEnquote = shouldEnquote || (s.match(/-/));
+
+  // e.g. 12.0.0.183
    shouldEnquote = shouldEnquote || (s.match(/\..*\./));
 
    // e.g. 12-01-2018
